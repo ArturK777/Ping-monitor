@@ -1,14 +1,16 @@
 REQUIRE /STRING lib\include\string.f
 REQUIRE CONCAT ~micro\lib\str.f
 
-4 CONSTANT N_ITEMS \ max number of nodes
+\ 4 CONSTANT N_ITEMS \ !NEED max number of nodes
 255 CONSTANT N_LEN  \ max length of nodelist string
 0 VALUE FILEID
 CREATE N_STR 0 , \ number of node strings in list
 CREATE MAX_LEN 0 , \ max len of node string
-CREATE tSTR N_LEN ALLOT \ temp string buffer
-CREATE NODES[] N_ITEMS N_LEN * ALLOT \ array of nodes
+CREATE DIMM[] 3 ALLOT 3 , 2 , 1 , \ NODES[]'s colums sizes
+\ CREATE tSTR N_LEN ALLOT \ temp string buffer
+
 : ?COMM ( addr -- c ) C@ 92 = ; \ is comment? "\"
+: ?BL ( addr -- c ) C@ 32 = ; \ is space? "\"
 : TRIM  ( str len -- str len-i ) \ Trim white space from end of string (from toolbelt.f)
     BEGIN  DUP WHILE
         1-  2DUP + C@ IsDelimiter 0=
@@ -24,30 +26,31 @@ CREATE NODES[] N_ITEMS N_LEN * ALLOT \ array of nodes
  	R/O OPEN-FILE THROW DUP TO FILEID ;
 : SCAN_LST ( fileid -- ) \ measuring nodelist size
     BEGIN
-        DUP tSTR N_LEN ROT READ-LINE THROW
+        DUP TIB N_LEN ROT READ-LINE THROW ." --- " .S ." --- " CR \ read line to TempInputBuffer
     WHILE
-         tSTR SWAP
+         TIB SWAP
          BL-SKIP \ skip leadind spaces
-         SWAP DUP ?COMM IF
+         SWAP DUP ?COMM IF \ is comment? "\"
             .S CR 2DROP
-         ELSE .S CR 
+         ELSE ( D: fileid len addr ) ." ... " .S >IN ? DUP 100 DUMP CR
+            0 BEGIN 
+                SWAP ( D: fileid len 0 addr ) 
+            WHILE
+                
+            REPEAT
             SWAP 2DUP TYPE CR .S CR
             MAX_LEN @ MAX MAX_LEN !
             N_STR 1+!
             DROP
          THEN
     REPEAT  DROP
+    N_STR ? MAX_LEN ?
 ;   
-: DIM_A ( i -- a ) N_LEN * NODES[] + ; \ NODES[i] cell addr
-: READ_DIM ( fileid -- ) \ read nodes.txt to NODES[]
-    N_ITEMS 0 DO DUP
-        I DIM_A N_LEN 2- ROT .S ." *** " READ-LINE .S THROW ." --> " FILEID FILE-POSITION . D. CR 
-        2DROP
-    LOOP
-;
+
 CR .( ---) CR 
 	OPEN_LST
     SCAN_LST
+    CREATE NODES[] N_STR MAX_LEN * ALLOT .S .( *** ) CR \ array of nodes
 \	READ_LST
 \    READ_DIM
     CLOSE-FILE THROW
@@ -55,11 +58,10 @@ CR .( ---) CR
 
 CR .( ===) CR .S
 
-: READ_LST
-	\ читаем по адресу HERE не более 1кЅ
-    DUP HERE 1024 ROT \ преобразовали из ( fid ) в ( fid addr-here 1024 fid )
-    READ-FILE THROW \ получили число реально считанныйх байт
-    HERE SWAP TYPE \ распечатаем их с адреса HERE
-	DUP FILE-SIZE
-\    CLOSE-FILE THROW \ всЄ, закончили
-;
+\ : DIM_A ( i -- a ) MAX_LEN * NODES[] + ; \ NODES[i] cell addr
+\ : READ_DIM ( fileid -- ) \ read nodes.txt to NODES[]
+\     N_ITEMS 0 DO DUP
+\        I DIM_A N_LEN 2- ROT .S ." *** " READ-LINE .S THROW ." --> " FILEID FILE-POSITION . D. CR 
+\        2DROP
+\    LOOP
+\ ; 

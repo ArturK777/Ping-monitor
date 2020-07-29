@@ -1,0 +1,4 @@
+CREATE tSTR 100 ALLOT \ temp string buffer
+tSTR 100 SOURCE!
+S" 10.0.0.100 temp 5"
+TIB 100 DUMP
