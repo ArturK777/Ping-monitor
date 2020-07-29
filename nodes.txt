@@ -1,0 +1,6 @@
+ \ Node's_addr alias ping_interval_seconds
+\ 192.168.0.1 HOME  3
+192.168.10.1RRRRRRRRRRRRRRRRRRRRRRRR
+            192.168.10.110         5555555555555555555555555555
+   ya.ru
+GOOGLE.COM
