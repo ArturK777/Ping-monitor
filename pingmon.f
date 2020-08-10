@@ -20,28 +20,29 @@ REQUIRE CONCAT ~micro\lib\str.f
 	S" nodes.txt" CONCAT  \ full name of nodes.txt
  	R/O OPEN-FILE THROW  ." FileID:" .S TO FILEID CR ;
 : READ_LINE  ( -- len flag ) PAD N_LEN FILEID READ-LINE THROW ; \ read 1 line from nodelist
-: SCAN#NODES  ( -- u )  0 \ count nodes in nodelist
+: PARSE_ ( c-addr len -- )  \ nodelist parser 
+	0 DO DUP I + C@ 
+		DUP 32 > IF EMIT ELSE DROP CR THEN  \ if not delimiter
+	LOOP ." +++ " DROP CR ;
+: SCAN_LIST  ( -- u )  0 \ make nodes list
 	BEGIN  READ_LINE ( -- len flag ) ." --- " .S ." --- " CR \ read line to TempInputBuffer
-    WHILE  PAD SWAP  BL-SKIP !SKIP  IF  \ is not comment "\" or empty line
-		1+  \ nodes counter
-\		ParseWord TYPE 
-	THEN  
-    REPEAT   TO N_STR ; \   PAD N_LEN ERASE ;
-: READ_LST
-	BEGIN READ_LINE
-	WHILE
-	REPEAT
-;
-CR .( ---) CR 
+    WHILE  PAD SWAP  BL-SKIP 2DUP !SKIP  IF  \ is not comment "\" or empty line
+		PARSE_ 1+  \ nodes counter
+		ELSE 2DROP 	THEN  
+  REPEAT   
+	TO N_STR ; 
+\   PAD N_LEN ERASE ;
+
+CR .( --- Start ) CR 
 	OPEN_LST .S
-	SCAN#NODES ( -- u )
-    CREATE NODES[] N_LEN * ALLOT   \ array of nodes
+	SCAN_LIST ( -- u )
+\    CREATE NODES[] N_LEN * ALLOT   \ array of nodes
 \	0 0 FILEID REPOSITION-FILE THROW  
-	READ_LST
+\	READ_LST
     FILEID CLOSE-FILE THROW
 \    NODES[] 100 DUMP
 
-CR .( ===) CR .S
+CR .( === End ) CR .S
 
 \ : DIM_A ( i -- a ) MAX_LEN * NODES[] + ; \ NODES[i] cell addr
 \ : READ_DIM ( fileid -- ) \ read nodes.txt to NODES[]

@@ -1,6 +1,6 @@
 \ Node's_addr(64 char max) alias(32 char max) ping_interval_seconds  
 \ Max string's length 255
-\ 192.168.0.1 HOME  3
+192.168.0.1 HOME  3
 192.168.10.1RRRRRRRRRRRRRRRRRRRRRRRR
        192.168.10.110         5555555555555555555555555555
 WEREWR
@@ -9,3 +9,4 @@ WEREWR
 
    ya.ru
 GOOGLE.COM
+
